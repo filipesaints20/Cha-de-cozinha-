@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Chá de Cozinha</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Bem-vindo ao Chá de Cozinha 💕</h1>
+  </header>
+  <div class="container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Seu email" />
+    <input type="password" id="senha" placeholder="Senha (ex: cha2025)" />
+    <button onclick="login()">Entrar</button>
+  </div>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value;
+      const senha = document.getElementById("senha").value;
+      if (email && senha === "cha2025") {
+        localStorage.setItem("usuarioLogado", email);
+        window.location.href = "presentes.html";
+      } else {
+        alert("Email ou senha incorretos.");
+      }
+    }
+  </script>
+</body>
+</html>

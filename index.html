@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chá de Cozinha 2025</title>
+  <style>
+    :root {
+      --primary: #e07a5f;
+      --secondary: #f4f1de;
+      --accent: #3d405b;
+      --success: #81b29a;
+      --danger: #f2cc8f;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--secondary);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    h1, h2 {
+      color: var(--primary);
+      text-align: center;
+    }
+    .hidden { display: none; }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+    input[type="email"], input[type="password"], input[type="text"] {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button, .btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 0.7rem 1.2rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    button:hover, .btn:hover {
+      background: var(--accent);
+    }
+    .gift-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .gift-item {
+      background: var(--secondary);
+      border-radius: 7px;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .gift-title {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    .gift-price {
+      color: var(--primary);
+      font-size: 1.1rem;
+    }
+    .reserved {
+      background: var(--success);
+      color: #fff;
+      padding: 0.3rem 0.7rem;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+      align-self: flex-start;
+    }
+    .modal-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 2rem 1.5rem;
+      max-width: 350px;
+      width: 100%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      color: var(--accent);
+      cursor: pointer;
+    }
+    .notify-links {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .notify-links a {
+      color: var(--primary);
+      text-decoration: underline;
+      font-size: 1rem;
+    }
+    @media (max-width: 500px) {
+      .container, .modal {
+        max-width: 98vw;
+        padding: 1rem 0.5rem;
+      }
+      h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="login-container">
+    <h1>Chá de Cozinha 2025</h1>
+    <form id="login-form">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required autocomplete="email">
+      <label for="login-password">Senha</label>
+      <input type="password" id="login-password" required autocomplete="current-password">
+      <button type="submit">Entrar</button>
+    </form>
+    <div id="login-error" style="color: var(--danger); margin-top: 1rem; display:none;"></div>
+  </div>
+
+  <div class="container hidden" id="gifts-container">
+    <h2>Lista de Presentes</h2>
+    <ul class="gift-list" id="gift-list"></ul>
+    <button class="btn" id="logout-btn" style="background:var(--danger);margin-top:1.5rem;">Sair</button>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-bg hidden" id="modal-bg">
+    <div class="modal" id="modal">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Configurações ---
+    const PASSWORD = "cha2025";
+    const ORGANIZER_EMAIL = "organizador@email.com"; // Troque para o email real do organizador
+    const ORGANIZER_WHATSAPP = "5599999999999"; // Troque para o número real do organizador (com DDI e DDD, só números)
+    const GIFTS = [
+      { id: 1, name: "Jogo de Panelas", price: 350 },
+      { id: 2, name: "Aparelho de Jantar", price: 220 },
+      { id: 3, name: "Liquidificador", price: 180 },
+      { id: 4, name: "Conjunto de Copos", price: 90 },
+      { id: 5, name: "Faqueiro", price: 210 },
+      { id: 6, name: "Tábua de Corte", price: 60 },
+      { id: 7, name: "Panela de Pressão", price: 250 },
+      { id: 8, name: "Jogo de Toalhas", price: 120 },
+      { id: 9, name: "Cafeteira", price: 230 },
+      { id: 10, name: "Assadeira", price: 70 }
+    ];
+
+    // --- Utilidades ---
+    function getReservations() {
+      return JSON.parse(localStorage.getItem('giftReservations') || '{}');
+    }
+    function setReservations(res) {
+      localStorage.setItem('giftReservations', JSON.stringify(res));
+    }
+    function formatPrice(v) {
+      return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, function(tag) {
+        const chars = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'};
+        return chars[tag] || tag;
+      });
+    }
+
+    // --- Login ---
+    const loginForm = document.getElementById('login-form');
+    const loginContainer = document.getElementById('login-container');
+    const giftsContainer = document.getElementById('gifts-container');
+    const loginError = document.getElementById('login-error');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    function showLogin() {
+      loginContainer.classList.remove('hidden');
+      giftsContainer.classList.add('hidden');
+      loginForm.reset();
+      loginError.style.display = 'none';
+    }
+    function showGifts() {
+      loginContainer.classList.add('hidden');
+      giftsContainer.classList.remove('hidden');
+      renderGiftList();
+    }
+    function isLoggedIn() {
+      return !!localStorage.getItem('cha_login');
+    }
+    function setLoggedIn(email) {
+      localStorage.setItem('cha_login', email);
+    }
+    function logout() {
+      localStorage.removeItem('cha_login');
+      showLogin();
+    }
+    loginForm.onsubmit = function(e) {
+      e.preventDefault();
+      const email = loginForm["login-email"].value.trim();
+      const password = loginForm["login-password"].value;
+      if (!email || password !== PASSWORD) {
+        loginError.textContent = "Email ou senha incorretos.";
+        loginError.style.display = 'block';
+        return;
+      }
+      setLoggedIn(email);
+      showGifts();
+    };
+    logoutBtn.onclick = logout;
+
+    // --- Lista de Presentes ---
+    const giftListEl = document.getElementById('gift-list');
+    function renderGiftList() {
+      const reservations = getReservations();
+      giftListEl.innerHTML = '';
+      GIFTS.forEach(gift => {
+        const res = reservations[gift.id];
+        const li = document.createElement('li');
+        li.className = 'gift-item';
+        li.innerHTML = `
+          <span class="gift-title">${escapeHtml(gift.name)}</span>
+          <span class="gift-price">${formatPrice(gift.price)}</span>
+        `;
+        if (res) {
+          li.innerHTML += `<span class="reserved">Reservado por: ${escapeHtml(res.name)}<br><small>${escapeHtml(res.email)}</small></span>`;
+        } else {
+          const btn = document.createElement('button');
+          btn.textContent = 'Vou comprar';
+          btn.onclick = () => openReserveModal(gift);
+          li.appendChild(btn);
+        }
+        giftListEl.appendChild(li);
+      });
+    }
+
+    // --- Modal de Reserva ---
+    const modalBg = document.getElementById('modal-bg');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalClose = document.getElementById('modal-close');
+    let currentGift = null;
+    let currentPaymentType = null;
+
+    function openReserveModal(gift) {
+      currentGift = gift;
+      currentPaymentType = null;
+      modalContent.innerHTML = '';
+      if (gift.price > 200) {
+        modalContent.innerHTML = `
+          <h3>Como será o pagamento?</h3>
+          <button class="btn" onclick="window.selectPayment('sozinho')">Sozinho</button>
+          <button class="btn" onclick="window.selectPayment('casal')">Em casal</button>
+        `;
+        window.selectPayment = function(type) {
+          currentPaymentType = type;
+          showReserveForm();
+        }
+      } else {
+        showReserveForm();
+      }
+      modalBg.classList.remove('hidden');
+    }
+    function showReserveForm() {
+      modalContent.innerHTML = `
+        <h3>Reservar: ${escapeHtml(currentGift.name)}</h3>
+        <form id="reserve-form">
+          <label for="reserve-name">Seu nome</label>
+          <input type="text" id="reserve-name" required maxlength="40">
+          <label for="reserve-email">Seu email</label>
+          <input type="email" id="reserve-email" required maxlength="60">
+          <button type="submit">Confirmar Reserva</button>
+        </form>
+      `;
+      document.getElementById('reserve-form').onsubmit = function(e) {
+        e.preventDefault();
+        const name = document.getElementById('reserve-name').value.trim();
+        const email = document.getElementById('reserve-email').value.trim();
+        if (!name || !email) return;
+        reserveGift(currentGift, name, email, currentPaymentType);
+        closeModal();
+        renderGiftList();
+        showNotifyLinks(currentGift, name, email, currentPaymentType);
+      };
+    }
+    function closeModal() {
+      modalBg.classList.add('hidden');
+      modalContent.innerHTML = '';
+      currentGift = null;
+      currentPaymentType = null;
+    }
+    modalClose.onclick = closeModal;
+    modalBg.onclick = function(e) {
+      if (e.target === modalBg) closeModal();
+    };
+
+    // --- Reservar Presente ---
+    function reserveGift(gift, name, email, paymentType) {
+      const reservations = getReservations();
+      reservations[gift.id] = { name, email, paymentType };
+      setReservations(reservations);
+    }
+
+    // --- Notificação ---
+    function showNotifyLinks(gift, name, email, paymentType) {
+      let msg = `Olá! Eu (${name}, ${email}) reservei o presente: ${gift.name} (${formatPrice(gift.price)})`;
+      if (paymentType) msg += `\nForma de pagamento: ${paymentType === 'sozinho' ? 'Sozinho' : 'Em casal'}`;
+      const whatsapp = `https://wa.me/${ORGANIZER_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+      const mailto = `mailto:${ORGANIZER_EMAIL}?subject=Reserva de presente: ${encodeURIComponent(gift.name)}&body=${encodeURIComponent(msg)}`;
+      modalContent.innerHTML = `
+        <h3>Reserva feita com sucesso!</h3>
+        <div class="notify-links">
+          <a href="${whatsapp}" target="_blank">Notificar pelo WhatsApp</a>
+          <a href="${mailto}" target="_blank">Notificar por Email</a>
+          <button class="btn" onclick="window.closeModal()">Fechar</button>
+        </div>
+      `;
+      modalBg.classList.remove('hidden');
+      window.closeModal = closeModal;
+    }
+
+    // --- Inicialização ---
+    window.onload = function() {
+      if (isLoggedIn()) {
+        showGifts();
+      } else {
+        showLogin();
+      }
+    };
+  </script>
+</body>
+</html>
